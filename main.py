@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QApplication, QLineEdit, QPushButton, \
     QMainWindow, QTableWidget, QTableWidgetItem, QDialog, QVBoxLayout, \
-    QComboBox, QToolBar
+    QComboBox, QToolBar, QStatusBar
 from PyQt6.QtGui import QAction, QIcon
 from PyQt6.QtCore import Qt
 import sys
@@ -37,7 +37,7 @@ class MainWindow(QMainWindow):
         # Table specified as central widget
         self.setCentralWidget(self.table)
 
-        # Create toolbar and add toolbar elements
+        # Add toolbar and add toolbar elements
         toolbar = QToolBar()
         toolbar.setMovable(True)
         # Adds toolbar to the window
@@ -46,6 +46,29 @@ class MainWindow(QMainWindow):
         toolbar.addAction(add_student_action)
         toolbar.addAction(search_action)
 
+        # Add statusbar and statusbar elements
+        self.statusbar = QStatusBar()
+        self.setStatusBar(self.statusbar)
+
+        # Execute cell_clicked method when user clicks on a cell
+        # cellClicked property of table; connect method of that property
+        self.table.cellClicked.connect(self.cell_clicked)
+
+    def cell_clicked(self):
+        #Generate edit button when cell is clicked
+        edit_button = QPushButton("Edit Record")
+        edit_button.clicked.connect(self.edit)
+
+        delete_button = QPushButton("Delete Record")
+        delete_button.clicked.connect(self.delete)
+
+        children = self.findChildren(QPushButton)
+        if children:
+            for child in children:
+                self.statusbar.removeWidget(child)
+
+        self.statusbar.addWidget(edit_button)
+        self.statusbar.addWidget(delete_button)
 
     def load_data(self):
         connection = sqlite3.connect("database.db")
@@ -69,6 +92,21 @@ class MainWindow(QMainWindow):
         # Instantiate search dialog class
         dialog = SearchDialog()
         dialog.exec()
+
+    def edit(self):
+        dialog = EditDialog()
+        dialog.exec()
+
+    def delete(self):
+        dialog = DeleteDialog()
+        dialog.exec()
+
+class EditDialog(QDialog):
+    pass
+
+
+class DeleteDialog(QDialog):
+    pass
 
 
 class InsertDialog(QDialog):
