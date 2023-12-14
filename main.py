@@ -11,7 +11,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Student Management System")
-        self.setMinimumSize(800, 600)
+        self.setMinimumSize(500, 400)
 
         file_menu_item = self.menuBar().addMenu("&File")
         help_menu_item = self.menuBar().addMenu("&Help")
@@ -24,7 +24,9 @@ class MainWindow(QMainWindow):
 
         about_action = QAction("About", self)
         help_menu_item.addAction(about_action)
+        # For Mac users
         about_action.setMenuRole(QAction.MenuRole.NoRole)
+        about_action.triggered.connect(self.about)
 
         search_action = QAction(QIcon("icons/search.png"), "Search", self)
         edit_menu_item.addAction(search_action)
@@ -101,6 +103,21 @@ class MainWindow(QMainWindow):
         dialog = DeleteDialog()
         dialog.exec()
 
+    def about(self):
+        dialog = AboutDialog()
+        dialog.exec()
+
+
+class AboutDialog(QMessageBox):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("About")
+        content = """
+        This app was created as part of the Python Mega Course.
+        Feel free to modify or extend.         
+        """
+        self.setText(content)
+
 
 class EditDialog(QDialog):
     def __init__(self):
@@ -147,7 +164,7 @@ class EditDialog(QDialog):
         connection = sqlite3.connect("database.db")
         cursor = connection.cursor()
         cursor.execute("UPDATE students SET name = ?, course = ?, mobile = ? WHERE id = ?",
-           (self.student_name.text(),
+        (self.student_name.text(),
                        self.course_name.itemText(self.course_name.currentIndex()),
                        self.mobile.text(),
                        self.student_id))
@@ -182,7 +199,7 @@ class DeleteDialog(QDialog):
 
         connection = sqlite3.connect("database.db")
         cursor = connection.cursor()
-        cursor.execute("DELETE FROM students WHERE id = ?",(student_id, ))
+        cursor.execute("DELETE FROM students WHERE id = ?", (student_id, ))
         connection.commit()
         cursor.close()
         connection.close()
@@ -195,7 +212,6 @@ class DeleteDialog(QDialog):
         delete_confirm_widget.setWindowTitle("Success!")
         delete_confirm_widget.setText("The record was deleted successfully.")
         delete_confirm_widget.exec()
-
 
 class InsertDialog(QDialog):
     def __init__(self):
@@ -238,8 +254,8 @@ class InsertDialog(QDialog):
         mobile = self.mobile.text()
         connection = sqlite3.connect("database.db")
         cursor = connection.cursor()
-        cursor.execute("INSERT INTO students (name, course, mobile) VALUES (?, ?, ?)",
-                                  (name, course, mobile))
+        cursor.execute("INSERT INTO students (name, course, mobile) "
+                             "VALUES (?, ?, ?)", (name, course, mobile))
         connection.commit()
         cursor.close()
         connection.close()
