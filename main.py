@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QApplication, QLineEdit, QPushButton, \
     QMainWindow, QTableWidget, QTableWidgetItem, QDialog, QVBoxLayout, \
-    QComboBox, QToolBar, QStatusBar
+    QComboBox, QToolBar, QStatusBar, QGridLayout, QLabel, QMessageBox
 from PyQt6.QtGui import QAction, QIcon
 from PyQt6.QtCore import Qt
 import sys
@@ -154,12 +154,47 @@ class EditDialog(QDialog):
         connection.commit()
         cursor.close()
         connection.close()
-
         # Refresh the table
         main_window.load_data()
 
+
 class DeleteDialog(QDialog):
-    pass
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Delete Student Data")
+
+        layout = QGridLayout()
+        confirmation = QLabel("Are you sure you want to delete this record?")
+        yes = QPushButton("Yes")
+        no = QPushButton("No")
+
+        layout.addWidget(confirmation, 0, 0, 1, 2)
+        layout.addWidget(yes, 1, 0)
+        layout.addWidget(no, 1, 1)
+        self.setLayout(layout)
+
+        yes.clicked.connect(self.delete_student)
+
+    def delete_student(self):
+        # Get index and student id from selected row
+        index = main_window.table.currentRow()
+        student_id = main_window.table.item(index, 0).text()
+
+        connection = sqlite3.connect("database.db")
+        cursor = connection.cursor()
+        cursor.execute("DELETE FROM students WHERE id = ?",(student_id, ))
+        connection.commit()
+        cursor.close()
+        connection.close()
+        # Refresh the table
+        main_window.load_data()
+
+        self.close()
+
+        delete_confirm_widget = QMessageBox()
+        delete_confirm_widget.setWindowTitle("Success!")
+        delete_confirm_widget.setText("The record was deleted successfully.")
+        delete_confirm_widget.exec()
 
 
 class InsertDialog(QDialog):
@@ -192,6 +227,10 @@ class InsertDialog(QDialog):
         layout.addWidget(button)
 
         self.setLayout(layout)
+        # Refresh the table
+        main_window.load_data()
+
+        self.close()
 
     def add_student(self):
         name = self.student_name.text()
